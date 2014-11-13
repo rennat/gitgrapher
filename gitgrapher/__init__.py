@@ -9,8 +9,8 @@ import git
 from gitgrapher.routedapp import RoutedApp
 
 
-def format_git_time(struct_time):
-    dt = datetime.datetime.fromtimestamp(time.mktime(struct_time))
+def format_git_time(git_time):
+    dt = datetime.datetime.fromtimestamp(git_time)
     return dt.isoformat() + 'Z'
 
 
@@ -35,7 +35,7 @@ def make_app(current_path, static_root):
         ])
         return [
             json.dumps({
-                'name': os.path.basename(repo.wd)
+                'name': os.path.basename(repo.working_dir)
             })
         ]
     
@@ -44,25 +44,25 @@ def make_app(current_path, static_root):
         refs = {}
         nodes = {}
         edges = []
-        for head in repo.heads:
-            for commit in repo.log(head.name):
-                if commit.id in nodes:
+        for ref in repo.refs:
+            for commit in repo.iter_commits(rev=ref.commit.hexsha):
+                if commit.hexsha in nodes:
                     continue
-                nodes[commit.id] = {
-                    'tree': commit.tree.id,
+                nodes[commit.hexsha] = {
+                    'tree': commit.tree.hexsha,
                     'author_name': commit.author.name,
                     'author_email': commit.author.email,
                     'authored_date': format_git_time(commit.authored_date)
                 }
                 for parent in commit.parents:
                     edges.append({
-                        'source': commit.id,
-                        'target': parent.id
+                        'source': commit.hexsha,
+                        'target': parent.hexsha
                     })
         for tag in repo.tags:
-            refs['tag/{}'.format(tag.name)] = tag.commit.id
+            refs['tag/{}'.format(tag.name)] = tag.commit.hexsha
         for branch in repo.branches:
-            refs['branch/{}'.format(branch.name)] = branch.commit.id
+            refs['branch/{}'.format(branch.name)] = branch.commit.hexsha
         start_response('200 OK', [
             ('Content-Type', 'application/json')
         ])
