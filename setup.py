@@ -14,7 +14,7 @@ setup(
         'gitgrapher.static': [
             '*.html', '*.js', '*.css'
         ]
-    }
+    },
     install_requires = [
         'gitpython'
     ]
