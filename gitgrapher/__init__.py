@@ -45,6 +45,7 @@ def make_app(current_path, static_root):
         nodes = {}
         edges = []
         for ref in repo.refs:
+            refs[ref.name] = ref.commit.hexsha
             for commit in repo.iter_commits(rev=ref.commit.hexsha):
                 if commit.hexsha in nodes:
                     continue
@@ -52,6 +53,7 @@ def make_app(current_path, static_root):
                     'tree': commit.tree.hexsha,
                     'author_name': commit.author.name,
                     'author_email': commit.author.email,
+                    'authored_timestamp': commit.authored_date,
                     'authored_date': format_git_time(commit.authored_date)
                 }
                 for parent in commit.parents:
@@ -59,10 +61,6 @@ def make_app(current_path, static_root):
                         'source': commit.hexsha,
                         'target': parent.hexsha
                     })
-        for tag in repo.tags:
-            refs['tag/{}'.format(tag.name)] = tag.commit.hexsha
-        for branch in repo.branches:
-            refs['branch/{}'.format(branch.name)] = branch.commit.hexsha
         start_response('200 OK', [
             ('Content-Type', 'application/json')
         ])
@@ -72,4 +70,4 @@ def make_app(current_path, static_root):
             'edges': edges
         })]
         
-    return app    
+    return app

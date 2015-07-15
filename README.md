@@ -8,9 +8,7 @@ Download & run:
 
 ## run
 
-`cd` into a Git repository and run:
-    
-    python -m gitgrapher
+    python -m gitgrapher [PATH_TO_REPO]
 
 Open a web browser to http://localhost:8000
 
