@@ -53,7 +53,11 @@ var force = d3.layout.force().
     linkStrength(2).
     linkDistance(32).
     friction(0.8).
-    charge(0).
+    charge(function (d) {
+    	var refCount = graph.commitRefCounts[d.tree] || 0;
+    	var charge = -120 + -240 * (refCount + 1);
+    	return charge;
+    }).
     gravity(0).
     theta(0.6).
     alpha(0.1);
@@ -85,7 +89,7 @@ $.ajax({
         	d.author = graph.authors.emailMap[d.author_email];
             //d.target_x = (d.authored_timestamp - graph.timestamp.min)/100;
             d.target_x = graph.timestamp.list.indexOf(d.authored_timestamp) * 32;
-            d.target_y = (d.author.index * 64);
+            d.target_y = d.author.index * (h/graph.authors.list.length);
 		});
         graph.edges = $.map(data.edges, function (d,id) {
             d.source_id = d.source;
@@ -132,6 +136,7 @@ $.ajax({
             data(graph.refs).
             enter().append("text").
             attr("class", "ref").
+            attr('style', 'writing-mode: tb;').
             attr("font-family", 'sans-serif').
             attr("font-size", 16).
             attr('fill', function (d) {
@@ -143,7 +148,7 @@ $.ajax({
         	data(graph.authors.list).
         	enter().append("div").
         	attr("class", "author").
-        	attr("style", function (d) { return "color: " + color(d.email); }).
+        	attr("style", function (d) { return "background: " + color(d.email); }).
         	text(function (d) {
         		return d.name + ' (' + d.email + ')';
         	});
@@ -166,9 +171,11 @@ $.ajax({
                 attr("cx", function(d) { return d.x; }).
                 attr("cy", function(d) { return d.y; });
             ref.
-                attr('x', function (d) { return d.commit.x; }).
+                attr('x', function (d) {
+                	return d.commit.x - 18 * d.commitRefIndex;
+                }).
                 attr('y', function (d) {
-                	return d.commit.y + 20 + 18 * d.commitRefIndex;
+                	return d.commit.y + 12;
                 });
         });
     }
